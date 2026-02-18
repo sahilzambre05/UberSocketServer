@@ -1,7 +1,10 @@
 package com.example.UberSocketServer.controller;
 
+import com.example.UberSocketServer.dto.ChatRequest;
+import com.example.UberSocketServer.dto.ChatResponse;
 import com.example.UberSocketServer.dto.TestRequest;
 import com.example.UberSocketServer.dto.TestResponse;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -11,12 +14,12 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class TestController {
 
-    private final SimpMessagingTemplate simpMessagingTemplate;
-
-
-    public TestController(SimpMessagingTemplate simpMessagingTemplate) {
-        this.simpMessagingTemplate = simpMessagingTemplate;
-    }
+//    private final SimpMessagingTemplate simpMessagingTemplate;
+//
+//
+//    public TestController(SimpMessagingTemplate simpMessagingTemplate) {
+//        this.simpMessagingTemplate = simpMessagingTemplate;
+//    }
 
     @MessageMapping("/ping")
     @SendTo("/topic/ping")
@@ -26,9 +29,20 @@ public class TestController {
     }
 
 
-    @Scheduled(fixedDelay = 2000)
-    public void sendPeriodicMessage() {
-        System.out.println("Executed periodic function");
-        simpMessagingTemplate.convertAndSend("/topic/scheduled", "Periodic Message sent " + System.currentTimeMillis());
+//    @Scheduled(fixedDelay = 2000)
+//    public void sendPeriodicMessage() {
+//        System.out.println("Executed periodic function");
+//        simpMessagingTemplate.convertAndSend("/topic/scheduled", "Periodic Message sent " + System.currentTimeMillis());
+//    }
+
+
+    @MessageMapping("/chat")
+    @SendTo("/topic/message")
+    public ChatResponse chatMessage(ChatRequest request) {
+        return ChatResponse.builder()
+                .name(request.getName())
+                .message(request.getMessage())
+                .timeStamp("" + System.currentTimeMillis())
+                .build();
     }
 }
