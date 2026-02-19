@@ -1,6 +1,6 @@
 package com.example.UberSocketServer.controller;
 
-//import com.example.UberSocketServer.Producers.KafkaProducerService;
+import com.example.UberSocketServer.Producer.KafkaProducerService;
 import com.example.UberSocketServer.dto.RideRequestDto;
 import com.example.UberSocketServer.dto.RideResponseDto;
 import com.example.UberSocketServer.dto.UpdateBookingRequestDto;
@@ -22,13 +22,19 @@ public class DriverRequestController {
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final RestTemplate restTemplate;
 
-//    private final KafkaProducerService kafkaProducerService;
+    private final KafkaProducerService kafkaProducerService;
 
 
-    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate) {
+    public DriverRequestController(SimpMessagingTemplate simpMessagingTemplate, KafkaProducerService kafkaProducerService) {
         this.simpMessagingTemplate = simpMessagingTemplate;
         this.restTemplate = new RestTemplate();
-//        this.kafkaProducerService = kafkaProducerService;
+        this.kafkaProducerService = kafkaProducerService;
+    }
+
+    @GetMapping
+    public Boolean help() {
+        kafkaProducerService.publishMessage("sample-topic", "Hello");
+        return true;
     }
 
     @PostMapping ("/newride")
@@ -54,7 +60,10 @@ public class DriverRequestController {
                 .driverId(Optional.of(Long.parseLong(userId)))
                 .status("SCHEDULED")
                 .build();
+        System.out.println("BookingId received: " + rideResponseDto.getBookingId());
+
         ResponseEntity<UpdateBookingResponseDto> result = this.restTemplate.postForEntity("http://localhost:8001/api/v1/booking/" + rideResponseDto.bookingId, requestDto, UpdateBookingResponseDto.class);
+        kafkaProducerService.publishMessage("sample-topic", "Hello");
         System.out.println(result.getStatusCode());
     }
 }
